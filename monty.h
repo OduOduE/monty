@@ -4,27 +4,23 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
 #include <unistd.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <sys/uio.h>
 #include <errno.h>
-#include <limits.h>
+#include <fcntl.h>
 #include <ctype.h>
-
-#define UNUSED(x) (void)(x)
-#define TRUE 1
-#define FALSE 0
-#define DELIMS "\n \t\r"
+#define Buffsize 30
 
 /**
- * struct stack_s -doubly linked list representation of a stack (or queue)
- * @n: integer element
- * @prev: points to previous element of stack or queue
- * @next: points to next element of stack or queue
+ * struct stack_s - Doubly linked list representation of a stack (or queue)
+ * @n: Integer
+ * @prev: Points to the previous element of the stack (or queue)
+ * @next: Points to the next element of the stack (or queue)
  *
- * Description: doubly linked list node structure
- * for stack, queues, FIFO, LIFO
+ * Description: Doubly linked list node structure
+ * for stack, queues, LIFO, FIFO
  */
 typedef struct stack_s
 {
@@ -34,7 +30,7 @@ typedef struct stack_s
 } stack_t;
 
 /**
- * struct instruction_s -opcode and its function
+ * struct instruction_s - Opcode and its function
  * @opcode: the opcode
  * @f: function to handle the opcode
  *
@@ -47,52 +43,71 @@ typedef struct instruction_s
 	void (*f)(stack_t **stack, unsigned int line_number);
 } instruction_t;
 
+
 /**
- * struct glob_s - useful global variables, all rolled into one
- * @top: double pointer to top of stack
- * @ops: double pointer to instruction struct
+ * struct glob_var - golbal variables
+ * @file: file name
+ * @buff: Getline buffer
+ * @tmp: Getline counter
+ * @dict: instruction dictionary
+ * @head: pointer to list
+ * @line_number: Stores file current line
+ * @MODE: Program configuration stack or queue
  */
-typedef struct glob_s
+typedef struct glob_var
 {
-	stack_t **top;
-	instruction_t **ops;
-} glob_t;
+	FILE *file;
+	char *buff;
+	size_t tmp;
+	instruction_t *dict;
+	stack_t *head;
+	unsigned int line_number;
+	int MODE;
+} vars;
 
-extern glob_t glob;
 
-/* monty.c */
-void stack_init(stack_t **head);
+extern vars var;
+
+/* ================================================================= */
+/* man_file.c */
+/* ================================================================= */
+int start_vars(vars *var);
+instruction_t *create_instru();
+int call_funct(vars *var, char *opcode);
 void free_all(void);
+int _isdigit(char *string);
 
-/* helper1.c */
-int process_file(char *filename, stack_t **stack);
+/* ================================================================= */
+/* op_funct.c */
+/* ================================================================= */
+void pall(stack_t **stack, unsigned int line_number);
+void push(stack_t **stack, unsigned int line_number);
+void pint(stack_t **stack, unsigned int line_number);
+void pop(stack_t **stack, unsigned int line_number);
 
-/* helper2.c */
-void delegate_op(stack_t **stack, char *op, unsigned int line_number);
+/* ================================================================= */
+/* op_funct_2.c */
+/* ================================================================= */
+void swap(stack_t **stack, unsigned int line_number);
+void add(stack_t **stack, unsigned int line_number);
+void sub(stack_t **stack, unsigned int line_number);
+void divi(stack_t **stack, unsigned int line_number);
 
-/* instruction1.c */
-void instruction_push(stack_t **stack, unsigned int line_number);
-void instruction_pop(stack_t **stack, unsigned int line_number);
-void instruction_pint(stack_t **stack, unsigned int line_number);
-void instruction_pall(stack_t **stack, unsigned int line_number);
-void instruction_swap(stack_t **stack, unsigned int line_number);
+/* ================================================================= */
+/* op_funct_3.c */
+/* ================================================================= */
+void mul(stack_t **stack, unsigned int line_number);
+void mod(stack_t **stack, unsigned int line_number);
+void pchar(stack_t **stack, unsigned int line_number);
+void pstr(stack_t **stack, unsigned int line_number);
 
-/* instruction2.c */
-void instruction_add(stack_t **stack, unsigned int line_number);
-void instruction_nop(stack_t **stack, unsigned int line_number);
-void instruction_sub(stack_t **stack, unsigned int line_number);
-void instruction_div(stack_t **stack, unsigned int line_number);
-void instruction_mul(stack_t **stack, unsigned int line_number);
+/* ================================================================= */
+/* op_funct_4.c */
+/* ================================================================= */
+void rotl(stack_t **stack, unsigned int line_number);
+void rotr(stack_t **stack, unsigned int line_number);
+void stack(stack_t **stack, unsigned int line_number);
+void queue(stack_t **stack, unsigned int line_number);
 
-/* instruction3.c */
-void instruction_mod(stack_t **stack, unsigned int line_number);
-void instruction_pchar(stack_t **stack, unsigned int line_number);
-void instruction_pstr(stack_t **stack, unsigned int line_number);
-void instruction_rotl(stack_t **stack, unsigned int line_number);
-void instruction_rotr(stack_t **stack, unsigned int line_number);
 
-/* _strtol.c */
-int is_leading_digit(char ascii_char);
-int _strtol(char *num_string, unsigned int line_number);
-
-#endif /* MONTY_H */
+#endif
